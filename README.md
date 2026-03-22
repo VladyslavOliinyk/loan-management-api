@@ -1,8 +1,8 @@
 # Loan Management API
 
-HTTP JSON API сервіс для роботи з кредитною базою даних.
+HTTP JSON API service for managing a loan database.
 
-## Технології
+## Tech Stack
 
 - Python 3.9+
 - FastAPI
@@ -10,36 +10,36 @@ HTTP JSON API сервіс для роботи з кредитною базою 
 - MySQL
 - PyMySQL
 
-## Запуск
+## Getting Started
 
-### Варіант 1: Docker Compose (рекомендовано)
+### Option 1: Docker Compose (recommended)
 
-Потрібен лише Docker. Одна команда запускає MySQL + API + завантажує тестові дані:
+Requires only Docker. A single command starts MySQL + API and loads test data:
 
 ```bash
 docker-compose up --build
 ```
 
-Сервер: http://127.0.0.1:8000
+Server: http://127.0.0.1:8000
 
 Swagger UI: http://127.0.0.1:8000/docs
 
-Зупинити:
+Stop:
 
 ```bash
 docker-compose down
 ```
 
-### Варіант 2: Локальна установка
+### Option 2: Local Setup
 
-#### 1. Клонувати репозиторій
+#### 1. Clone the repository
 
 ```bash
 git clone <url>
 cd loan-management-api
 ```
 
-#### 2. Створити віртуальне середовище та встановити залежності
+#### 2. Create a virtual environment and install dependencies
 
 ```bash
 python -m venv .venv
@@ -48,49 +48,53 @@ python -m venv .venv
 pip install -r requirements.txt
 ```
 
-#### 3. Налаштувати базу даних MySQL
+#### 3. Configure MySQL database
 
-Створити базу даних `loan_management` та за потреби змінити параметри підключення у файлі `.env`:
+Create the `loan_management` database and update connection settings in `.env` if needed:
+
+```bash
+cp .env.example .env
+```
 
 ```
 DATABASE_URL=mysql+pymysql://root:password@localhost:3306/loan_management
 ```
 
-#### 4. Завантажити тестові дані
+#### 4. Load test data
 
 ```bash
 python scripts/load_csv.py
 ```
 
-Скрипт автоматично створить таблиці та завантажить дані з CSV-файлів (папка `data/`).
+The script automatically creates tables and loads data from CSV files (`data/` folder).
 
-#### 5. Запустити сервер
+#### 5. Start the server
 
 ```bash
 uvicorn app.main:app --reload
 ```
 
-Сервер: http://127.0.0.1:8000
+Server: http://127.0.0.1:8000
 
 Swagger UI: http://127.0.0.1:8000/docs
 
-## Структура БД
+## Database Schema
 
-- **Users** — клієнти (id, login, registration_date)
-- **Credits** — кредити (id, user_id, issuance_date, return_date, actual_return_date, body, percent)
-- **Payments** — платежі (id, sum, payment_date, credit_id, type_id)
-- **Plans** — плани видач/зборів (id, period, sum, category_id)
-- **Dictionary** — довідник категорій (id, name)
+- **Users** — clients (id, login, registration_date)
+- **Credits** — issued loans (id, user_id, issuance_date, return_date, actual_return_date, body, percent)
+- **Payments** — loan payments (id, sum, payment_date, credit_id, type_id)
+- **Plans** — monthly issuance/collection plans (id, period, sum, category_id)
+- **Dictionary** — category reference (id, name)
 
-## API ендпоінти
+## API Endpoints
 
 ### GET /user_credits/{user_id}
 
-Інформація про кредити клієнта.
+Returns credit information for a specific user.
 
-Для закритих кредитів: дата видачі, дата повернення, сума видачі, відсотки, сума платежів.
+Closed credits: issuance date, return date, loan body, interest, total payments.
 
-Для відкритих кредитів: дата видачі, крайня дата повернення, кількість днів прострочення, сума видачі, відсотки, платежі по тілу та відсоткам.
+Open credits: issuance date, due date, overdue days, loan body, interest, body payments, interest payments.
 
 ```
 GET http://127.0.0.1:8000/user_credits/1
@@ -98,21 +102,21 @@ GET http://127.0.0.1:8000/user_credits/1
 
 ### POST /plans_insert
 
-Завантаження планів з Excel-файлу (.xlsx).
+Upload monthly plans from an Excel file (.xlsx).
 
-Валідація: перше число місяця, непусті суми, відсутність дублікатів, коректні категорії.
+Validation: period must be the first day of the month, sums must not be empty, no duplicates allowed, categories must exist.
 
 ```
 POST http://127.0.0.1:8000/plans_insert
 Content-Type: multipart/form-data
-file: <Excel-файл>
+file: <Excel file>
 ```
 
-Формат Excel: стовпці `period` (дата), `category` (назва категорії), `sum` (сума).
+Excel format: columns `period` (date), `category` (category name), `sum` (amount).
 
 ### GET /plans_performance
 
-Виконання планів на певну дату.
+Plan performance as of a given date.
 
 ```
 GET http://127.0.0.1:8000/plans_performance?check_date=2020-06-15
@@ -120,31 +124,31 @@ GET http://127.0.0.1:8000/plans_performance?check_date=2020-06-15
 
 ### GET /year_performance
 
-Зведена інформація за рік з помісячним групуванням.
+Yearly summary with monthly breakdown.
 
 ```
 GET http://127.0.0.1:8000/year_performance?year=2020
 ```
 
-## Структура проєкту
+## Project Structure
 
 ```
 loan-management-api/
 ├── app/
 │   ├── __init__.py
-│   ├── main.py          # точка входу FastAPI
-│   ├── database.py      # підключення до БД
-│   ├── models.py        # SQLAlchemy моделі
-│   ├── schemas.py       # Pydantic схеми
+│   ├── main.py            # FastAPI entry point
+│   ├── database.py        # database connection
+│   ├── models.py          # SQLAlchemy models
+│   ├── schemas.py         # Pydantic schemas
 │   └── routers/
-│       ├── credits.py       # /user_credits
-│       ├── plans.py         # /plans_insert, /plans_performance
-│       └── performance.py   # /year_performance
-├── data/                # CSV-файли з тестовими даними
+│       ├── credits.py         # /user_credits
+│       ├── plans.py           # /plans_insert, /plans_performance
+│       └── performance.py     # /year_performance
+├── data/                  # CSV test data
 ├── scripts/
-│   └── load_csv.py      # скрипт завантаження даних
-├── .env                 # параметри підключення до БД
+│   └── load_csv.py        # data loading script
+├── .env.example           # environment variables template
 ├── requirements.txt
-├── Dockerfile           # Docker-образ для API
-└── docker-compose.yml   # запуск MySQL + API однією командою
+├── Dockerfile
+└── docker-compose.yml
 ```
