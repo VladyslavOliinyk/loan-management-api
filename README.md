@@ -35,7 +35,7 @@ docker-compose down
 #### 1. Clone the repository
 
 ```bash
-git clone <url>
+git clone <https://github.com/VladyslavOliinyk/loan-management-api.git>
 cd loan-management-api
 ```
 
