@@ -1,6 +1,4 @@
 from datetime import date
-from decimal import Decimal
-
 from fastapi import APIRouter, Depends, HTTPException, Query, UploadFile
 from openpyxl import load_workbook
 from sqlalchemy import and_, func
@@ -77,7 +75,7 @@ def insert_plans(file: UploadFile, db: Session = Depends(get_db)):
             continue
 
         plans_to_insert.append(
-            Plan(period=period_val, sum=Decimal(str(sum_val)), category_id=category_id)
+            Plan(period=period_val, sum=float(sum_val), category_id=category_id)
         )
 
     if errors:
@@ -128,8 +126,9 @@ def get_plans_performance(check_date: date = Query(...), db: Session = Depends(g
         else:
             continue
 
-        fact = Decimal(str(fact))
-        perf = (fact / plan.sum * 100) if plan.sum else Decimal("0")
+        fact = float(fact)
+        plan_sum = float(plan.sum)
+        perf = (fact / plan_sum * 100) if plan_sum else 0
 
         items.append(
             PlanPerformanceItem(

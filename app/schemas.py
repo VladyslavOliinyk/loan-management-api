@@ -1,5 +1,4 @@
 from datetime import date
-from decimal import Decimal
 
 from pydantic import BaseModel
 
@@ -8,9 +7,9 @@ class ClosedCreditResponse(BaseModel):
     issuance_date: date
     is_closed: bool = True
     actual_return_date: date
-    body: Decimal
-    percent: Decimal
-    total_payments: Decimal
+    body: float
+    percent: float
+    total_payments: float
 
 
 class OpenCreditResponse(BaseModel):
@@ -18,10 +17,10 @@ class OpenCreditResponse(BaseModel):
     is_closed: bool = False
     return_date: date
     overdue_days: int
-    body: Decimal
-    percent: Decimal
-    body_payments: Decimal
-    percent_payments: Decimal
+    body: float
+    percent: float
+    body_payments: float
+    percent_payments: float
 
 
 class PlansInsertResponse(BaseModel):
@@ -31,9 +30,9 @@ class PlansInsertResponse(BaseModel):
 class PlanPerformanceItem(BaseModel):
     month: date
     category: str
-    plan_sum: Decimal
-    fact_sum: Decimal
-    performance_percent: Decimal
+    plan_sum: float
+    fact_sum: float
+    performance_percent: float
 
 
 class PlanPerformanceResponse(BaseModel):
@@ -43,15 +42,15 @@ class PlanPerformanceResponse(BaseModel):
 class YearPerformanceItem(BaseModel):
     month: date
     issuance_count: int
-    issuance_plan: Decimal
-    issuance_fact: Decimal
-    issuance_percent: Decimal
+    issuance_plan: float
+    issuance_fact: float
+    issuance_percent: float
     payment_count: int
-    collection_plan: Decimal
-    collection_fact: Decimal
-    collection_percent: Decimal
-    issuance_year_share: Decimal
-    payment_year_share: Decimal
+    collection_plan: float
+    collection_fact: float
+    collection_percent: float
+    issuance_year_share: float
+    payment_year_share: float
 
 
 class YearPerformanceResponse(BaseModel):

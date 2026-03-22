@@ -1,5 +1,4 @@
 from datetime import date
-from decimal import Decimal
 
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy import func
@@ -35,7 +34,7 @@ def get_user_credits(
                     actual_return_date=credit.actual_return_date,
                     body=credit.body,
                     percent=credit.percent,
-                    total_payments=Decimal(str(total_payments)),
+                    total_payments=float(total_payments),
                 )
             )
         else:
@@ -57,8 +56,8 @@ def get_user_credits(
                     overdue_days=overdue_days,
                     body=credit.body,
                     percent=credit.percent,
-                    body_payments=Decimal(str(body_payments)),
-                    percent_payments=Decimal(str(percent_payments)),
+                    body_payments=float(body_payments),
+                    percent_payments=float(percent_payments),
                 )
             )
 

@@ -1,5 +1,4 @@
 from datetime import date
-from decimal import Decimal
 
 from fastapi import APIRouter, Depends, Query
 from sqlalchemy import and_, extract, func
@@ -17,19 +16,15 @@ COLLECTION_CATEGORY_ID = 4
 
 @router.get("/year_performance", response_model=YearPerformanceResponse)
 def get_year_performance(year: int = Query(...), db: Session = Depends(get_db)):
-    year_total_issuance = Decimal(
-        str(
-            db.query(func.coalesce(func.sum(Credit.body), 0))
-            .filter(extract("year", Credit.issuance_date) == year)
-            .scalar()
-        )
+    year_total_issuance = float(
+        db.query(func.coalesce(func.sum(Credit.body), 0))
+        .filter(extract("year", Credit.issuance_date) == year)
+        .scalar()
     )
-    year_total_payments = Decimal(
-        str(
-            db.query(func.coalesce(func.sum(Payment.sum), 0))
-            .filter(extract("year", Payment.payment_date) == year)
-            .scalar()
-        )
+    year_total_payments = float(
+        db.query(func.coalesce(func.sum(Payment.sum), 0))
+        .filter(extract("year", Payment.payment_date) == year)
+        .scalar()
     )
 
     items = []
@@ -51,25 +46,21 @@ def get_year_performance(year: int = Query(...), db: Session = Depends(get_db)):
             .scalar()
         )
 
-        issuance_fact = Decimal(
-            str(
-                db.query(func.coalesce(func.sum(Credit.body), 0))
-                .filter(
-                    and_(
-                        Credit.issuance_date >= month_start,
-                        Credit.issuance_date < month_end,
-                    )
+        issuance_fact = float(
+            db.query(func.coalesce(func.sum(Credit.body), 0))
+            .filter(
+                and_(
+                    Credit.issuance_date >= month_start,
+                    Credit.issuance_date < month_end,
                 )
-                .scalar()
             )
+            .scalar()
         )
 
-        issuance_plan = Decimal(
-            str(
-                db.query(func.coalesce(func.sum(Plan.sum), 0))
-                .filter(Plan.period == month_start, Plan.category_id == ISSUANCE_CATEGORY_ID)
-                .scalar()
-            )
+        issuance_plan = float(
+            db.query(func.coalesce(func.sum(Plan.sum), 0))
+            .filter(Plan.period == month_start, Plan.category_id == ISSUANCE_CATEGORY_ID)
+            .scalar()
         )
 
         payment_count = (
@@ -83,42 +74,38 @@ def get_year_performance(year: int = Query(...), db: Session = Depends(get_db)):
             .scalar()
         )
 
-        collection_fact = Decimal(
-            str(
-                db.query(func.coalesce(func.sum(Payment.sum), 0))
-                .filter(
-                    and_(
-                        Payment.payment_date >= month_start,
-                        Payment.payment_date < month_end,
-                    )
+        collection_fact = float(
+            db.query(func.coalesce(func.sum(Payment.sum), 0))
+            .filter(
+                and_(
+                    Payment.payment_date >= month_start,
+                    Payment.payment_date < month_end,
                 )
-                .scalar()
             )
+            .scalar()
         )
 
-        collection_plan = Decimal(
-            str(
-                db.query(func.coalesce(func.sum(Plan.sum), 0))
-                .filter(Plan.period == month_start, Plan.category_id == COLLECTION_CATEGORY_ID)
-                .scalar()
-            )
+        collection_plan = float(
+            db.query(func.coalesce(func.sum(Plan.sum), 0))
+            .filter(Plan.period == month_start, Plan.category_id == COLLECTION_CATEGORY_ID)
+            .scalar()
         )
 
         issuance_percent = (
-            (issuance_fact / issuance_plan * 100) if issuance_plan else Decimal("0")
+            (issuance_fact / issuance_plan * 100) if issuance_plan else 0
         )
         collection_percent = (
-            (collection_fact / collection_plan * 100) if collection_plan else Decimal("0")
+            (collection_fact / collection_plan * 100) if collection_plan else 0
         )
         issuance_year_share = (
             (issuance_fact / year_total_issuance * 100)
             if year_total_issuance
-            else Decimal("0")
+            else 0
         )
         payment_year_share = (
             (collection_fact / year_total_payments * 100)
             if year_total_payments
-            else Decimal("0")
+            else 0
         )
 
         items.append(
