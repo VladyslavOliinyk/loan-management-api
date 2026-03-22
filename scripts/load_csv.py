@@ -30,6 +30,11 @@ def main():
     db = SessionLocal()
 
     try:
+        existing = db.query(User).first()
+        if existing:
+            print("Data already loaded, skipping.")
+            return
+
         # Dictionary
         rows = load_csv(os.path.join(data_dir, "dictionary.csv"))
         for row in rows:
